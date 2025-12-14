@@ -1,15 +1,8 @@
-import os
 import pandas as pd
-
 
 # 데이터셋을 불러오는 코드 (csv 전용)
 def load_dataset(input_path):
-    ext = os.path.splitext(input_path)[1].lower()
-
-    if ext == ".csv":
-        df = pd.read_csv(input_path)
-    else:
-        raise ValueError(f"지원하지 않는 파일 확장자입니다: {ext}")
+    df = pd.read_csv(input_path)
 
     return df
 
