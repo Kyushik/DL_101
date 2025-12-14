@@ -77,8 +77,8 @@ def save_as_csv(df_train, df_test):
     df_train.to_csv("train.csv", index=False, encoding="utf-8-sig")
     df_test.to_csv("test.csv", index=False, encoding="utf-8-sig")
 
-    print(f"\n저장 완료: {"train.csv"}")
-    print(f"저장 완료: {"test.csv"}")
+    print("\n저장 완료: train.csv")
+    print("저장 완료: test.csv")
 
 
 def main():
