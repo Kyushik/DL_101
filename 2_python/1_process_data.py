@@ -1,6 +1,6 @@
 import os
 import pandas as pd
-from collections import defaultdict
+
 
 # 데이터셋을 불러오는 코드 (csv 전용)
 def load_dataset(input_path):
@@ -14,64 +14,44 @@ def load_dataset(input_path):
     return df
 
 
-# 유효한 데이터만 통과시키는 함수 (유효 여부 + 탈락 사유 반환)
+# 유효한 데이터만 통과시키는 함수
 def is_valid_row(row):
-    # 1) mbti 체크 (f/t가 아닌것 = 탈락)
-    mbti = str(row.get("mbti", ""))
-    if mbti not in {"f", "t"}:
-        return False, "mbti_invalid"
+    # 1) mbti 체크 (f/t가 아닌것 = 제거)
+    mbti = str(row.get("mbti", "")).lower()
+    if mbti not in ["f", "t"]: 
+        return False
 
-    # 2) conversation / response 존재 & 빈 문자열 아님
+    # 2) conversation / response 데이터 존재 & 빈 문자열 아님 체크
     conversation = row.get("conversation", "")
     response = row.get("response", "")
 
-    if pd.isna(conversation):
-        return False, "conversation_nan"  # 대화 데이터 누락
-    if pd.isna(response):
-        return False, "response_nan"  # 응답 데이터 누락
+    if pd.isna(conversation) or pd.isna(response):
+        return False
 
     conversation = str(conversation).strip()
     response = str(response).strip()
 
-    if conversation == "":
-        return False, "conversation_empty"  # 대화 데이터 빈 문자열
-    if response == "":
-        return False, "response_empty"  # 응답 데이터 빈 문자열
+    if conversation == "" or response == "":
+        return False
 
     # 3) 길이 체크: 5글자 이하 필터링
-    if len(conversation) <= 5:
-        return False, "conversation_too_short"
-    if len(response) <= 5:
-        return False, "response_too_short"
+    if len(conversation) <= 5 or len(response) <= 5:
+        return False
 
-    return True, "valid"
+    return True
 
 
-# Dataframe에서 유효한 행만 남기는 함수 (+ 탈락 사유별 통계 출력)
+# Dataframe에서 유효한 행만 남기는 함수
 def filter_dataset(df):
-    before = len(df)
+    before = len(df) # 필터링 이전 데이터 길이
 
-    stats = defaultdict(int)
-    valid_rows = []
-
-    for _, row in df.iterrows():
-        ok, reason = is_valid_row(row)
-        stats[reason] += 1
-        if ok:
-            valid_rows.append(row)
-
-    df_valid = pd.DataFrame(valid_rows).copy()
-    after = len(df_valid)
+    df_valid = df[df.apply(is_valid_row, axis=1)].copy()
+    after = len(df_valid) # 필터링 이후 데이터 길이
 
     print("\n=== 데이터 필터링 결과 ===")
     print(f"전체 데이터: {before}개")
     print(f"유효 데이터: {after}개")
     print(f"제외된 데이터: {before - after}개")
-
-    print("\n[탈락 사유별 개수]")
-    for reason, count in sorted(stats.items(), key=lambda x: (-x[1], x[0])):
-        if reason != "valid":
-            print(f"- {reason}: {count}개")
 
     return df_valid
 
@@ -97,20 +77,21 @@ def save_as_csv(df_train, df_test):
     df_train.to_csv("train.csv", index=False, encoding="utf-8-sig")
     df_test.to_csv("test.csv", index=False, encoding="utf-8-sig")
 
-    print("\n저장 완료: train.csv")
-    print("저장 완료: test.csv")
+    print(f"\n저장 완료: {"train.csv"}")
+    print(f"저장 완료: {"test.csv"}")
 
 
 def main():
+    # 데이터셋 불러오기
     df = load_dataset("mbti_train.csv")
 
     # 컬럼 목록 출력
     print("컬럼 목록:", list(df.columns))
 
-    # 조건에 맞는 데이터만 필터링 (+ 탈락 사유별 통계 출력)
+    # 조건에 맞는 데이터만 필터링
     df_valid = filter_dataset(df)
 
-    # train / test split
+    # train/test셋 나누기
     df_train, df_test = split_train_test(df_valid, train_ratio=0.8)
 
     # CSV로 저장
