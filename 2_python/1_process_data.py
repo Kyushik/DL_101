@@ -38,7 +38,7 @@ def is_valid_row(row):
 def filter_dataset(df):
     before = len(df) # 필터링 이전 데이터 길이
 
-    df_valid = df[df.apply(is_valid_row, axis=1)].copy()
+    df_valid = df[df.apply(is_valid_row, axis=1)]
     after = len(df_valid) # 필터링 이후 데이터 길이
 
     print("\n=== 데이터 필터링 결과 ===")
