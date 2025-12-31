@@ -10,7 +10,7 @@ def load_dataset(input_path):
 # 유효한 데이터만 통과시키는 함수
 def is_valid_row(row):
     # 1) mbti 체크 (f/t가 아닌것 = 제거)
-    mbti = str(row.get("mbti", "")).lower()
+    mbti = str(row.get("mbti", ""))
     if mbti not in ["f", "t"]: 
         return False
 
