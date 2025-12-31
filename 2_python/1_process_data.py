@@ -14,7 +14,7 @@ def is_valid_row(row):
     if mbti not in ["f", "t"]: 
         return False
 
-    # 2) conversation / response 데이터 존재 & 짧은 데이터 체크
+    # 2,3) conversation / response 데이터 존재 & 짧은 데이터 체크
     conversation = row.get("conversation", "")
     response = row.get("response", "")
 
