@@ -14,20 +14,14 @@ def is_valid_row(row):
     if mbti not in ["f", "t"]: 
         return False
 
-    # 2) conversation / response 데이터 존재 & 빈 문자열 아님 체크
+    # 2) conversation / response 데이터 존재 & 짧은 데이터 체크
     conversation = row.get("conversation", "")
     response = row.get("response", "")
-
-    if pd.isna(conversation) or pd.isna(response):
-        return False
 
     conversation = str(conversation).strip()
     response = str(response).strip()
 
-    if conversation == "" or response == "":
-        return False
-
-    # 3) 길이 체크: 5글자 이하 필터링
+    # 5글자 이하 필터링
     if len(conversation) <= 5 or len(response) <= 5:
         return False
 
