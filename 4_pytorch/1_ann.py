@@ -1,5 +1,3 @@
-# pip install datasets torch torchvision pillow matplotlib
-
 import random
 import torch
 import torch.nn as nn
@@ -116,8 +114,8 @@ def evaluate(loader):
     total_loss, correct, total = 0.0, 0, 0
 
     for x, y in loader:
-        x = x.to(device, non_blocking=True)
-        y = y.to(device, non_blocking=True)
+        x = x.to(device)
+        y = y.to(device)
 
         logits = model(x)
         loss = criterion(logits, y)
@@ -142,10 +140,10 @@ for epoch in range(1, EPOCHS + 1):
     train_loss_sum, train_count = 0.0, 0
 
     for x, y in train_loader:
-        x = x.to(device, non_blocking=True)
-        y = y.to(device, non_blocking=True)
+        x = x.to(device)
+        y = y.to(device)
 
-        optimizer.zero_grad(set_to_none=True)
+        optimizer.zero_grad()
         logits = model(x)
         loss = criterion(logits, y)
         loss.backward()
