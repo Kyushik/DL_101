@@ -102,20 +102,13 @@ print("\n"+"-"*40)
 # 8) 학습 5번 수행 예시 
 # -----------------------------
 for step in range(1, 6):
-    # 예측
-    y_pred = model(x)
+    y_pred = model(x) # 예측
 
-    # loss 계산
-    loss = criterion(y_pred, y_true)
+    loss = criterion(y_pred, y_true) # loss 계산
 
-    # 기울기 초기화
-    optimizer.zero_grad()
-
-    # 역전파
-    loss.backward()
-
-    # 가중치 업데이트
-    optimizer.step()
+    optimizer.zero_grad() # 기울기 초기화
+    loss.backward() # 역전파
+    optimizer.step() # 가중치 업데이트
 
     # 결과 출력
     print(f"\n[스텝 {step}]")
