@@ -162,9 +162,10 @@ for epoch in range(1, EPOCHS + 1):
         x = x.to(device)
         y = y.to(device)
 
-        optimizer.zero_grad()
         logits = model(x)
         loss = criterion(logits, y)
+        
+        optimizer.zero_grad()
         loss.backward()
         optimizer.step()
 
