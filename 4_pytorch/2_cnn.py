@@ -208,7 +208,7 @@ for i, idx in enumerate(indices):
     plt.subplot(2, 4, i + 1)
     plt.imshow(img_show)
     plt.axis("off")
-    plt.title(f"T:{label_name[true_label]}\nP:{label_name[pred_label]} ({conf*100:.1f}%)")
+    plt.title(f"T:{label_name[true_label]} / P:{label_name[pred_label]} ({conf*100:.1f}%)")
 
 plt.tight_layout()
 plt.show()
