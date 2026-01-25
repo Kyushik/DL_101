@@ -11,7 +11,7 @@ model = AutoModelForCausalLM.from_pretrained(
 )
 
 # prepare the model input
-prompt = "Give me a short introduction to large language model."
+prompt = "LLM에 대해 짧게 설명해줘"
 messages = [
     {"role": "user", "content": prompt}
 ]
