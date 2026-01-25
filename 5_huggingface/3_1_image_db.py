@@ -11,6 +11,14 @@ from datasets import load_dataset
 from transformers import CLIPProcessor, CLIPModel
 
 
+def get_vector_norm(tensor: torch.Tensor) -> torch.Tensor:
+    """L2 정규화를 위한 벡터 norm 계산"""
+    square_tensor = torch.pow(tensor, 2)
+    sum_tensor = torch.sum(square_tensor, dim=-1, keepdim=True)
+    normed_tensor = torch.pow(sum_tensor, 0.5)
+    return normed_tensor
+
+
 # 1. CLIP 모델 로드
 print("CLIP 모델 로딩 중...")
 model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
@@ -27,16 +35,10 @@ print("\nCaltech-256 데이터셋 다운로드 중... (처음엔 시간이 걸�
 dataset = load_dataset("bitmind/caltech-256", split="train")
 print(f"이미지 개수: {len(dataset)}")
 
-# 카테고리 이름 추출
-categories = dataset.features["label"].names
-print(f"클래스 개수: {len(categories)}")
-
-
 # 3. 이미지 임베딩 생성
 print("\n이미지 임베딩 생성 중...")
 batch_size = 32
 all_embeddings = []
-all_labels = []
 
 for i in range(0, len(dataset), batch_size):
     batch = dataset[i:i + batch_size]
@@ -48,22 +50,20 @@ for i in range(0, len(dataset), batch_size):
             img = img.convert("RGB")
         images.append(img)
 
-    # CLIP 전처리 및 임베딩 (forward 사용 - 이미 정규화됨)
+    # CLIP 전처리 및 임베딩
     inputs = processor(images=images, return_tensors="pt", padding=True)
     inputs = {k: v.to(device) for k, v in inputs.items()}
 
     with torch.no_grad():
-        outputs = model(**inputs)
-        embeddings = outputs.image_embeds  # 이미 정규화된 임베딩
+        image_embeds = model.get_image_features(**inputs)
+        image_embeds = image_embeds / get_vector_norm(image_embeds)  # 정규화
 
-    all_embeddings.append(embeddings.cpu().numpy())
-    all_labels.extend(batch["label"])
+    all_embeddings.append(image_embeds.cpu().numpy())
 
     if (i // batch_size + 1) % 50 == 0:
         print(f"  진행: {min(i + batch_size, len(dataset))}/{len(dataset)}")
 
 embeddings = np.vstack(all_embeddings).astype("float32")
-labels = np.array(all_labels)
 print(f"\n임베딩 shape: {embeddings.shape}")
 
 
@@ -79,10 +79,6 @@ save_dir = "5_huggingface/image_db"
 os.makedirs(save_dir, exist_ok=True)
 
 faiss.write_index(index, f"{save_dir}/caltech256.index")
-np.save(f"{save_dir}/labels.npy", labels)
-np.save(f"{save_dir}/categories.npy", categories)
 
 print(f"\n저장 완료: {save_dir}/")
 print("  - caltech256.index (FAISS 인덱스)")
-print("  - labels.npy (레이블 정보)")
-print("  - categories.npy (카테고리 이름)")
