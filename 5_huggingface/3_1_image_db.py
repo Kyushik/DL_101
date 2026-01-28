@@ -1,6 +1,9 @@
 """
-CLIP 이미지 인코더 + FAISS를 활용한 이미지 DB 구축
-데이터셋: Caltech-256 (256개 다양한 카테고리, 30,607개 이미지)
+CLIP(이미지 인코더) + FAISS(벡터 검색 라이브러리)로
+이미지들을 "벡터 DB"로 만들어 저장하는 코드
+
+데이터셋: Caltech-256 (약 3만 장 이미지)
+결과물: caltech256.index (FAISS 인덱스 파일)
 """
 
 import os
@@ -9,76 +12,92 @@ import faiss
 import numpy as np
 from datasets import load_dataset
 from transformers import CLIPProcessor, CLIPModel
+import torch.nn.functional as F  
 
 
-def get_vector_norm(tensor: torch.Tensor) -> torch.Tensor:
-    """L2 정규화를 위한 벡터 norm 계산"""
-    square_tensor = torch.pow(tensor, 2)
-    sum_tensor = torch.sum(square_tensor, dim=-1, keepdim=True)
-    normed_tensor = torch.pow(sum_tensor, 0.5)
-    return normed_tensor
-
-
-# 1. CLIP 모델 로드
+# -----------------------------
+# 1) CLIP 모델 준비
+# -----------------------------
 print("CLIP 모델 로딩 중...")
-model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
-processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
+model_name = "openai/clip-vit-base-patch32"
+
+model = CLIPModel.from_pretrained(model_name)
+processor = CLIPProcessor.from_pretrained(model_name)
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 model = model.to(device)
-model.eval()
+model.eval()  # 학습이 아니라 추론 모드로 설정
 print(f"디바이스: {device}")
 
 
-# 2. Caltech-256 데이터셋 로드 (Hugging Face)
-print("\nCaltech-256 데이터셋 다운로드 중... (처음엔 시간이 걸립니다)")
+# -----------------------------
+# 2) 데이터셋 로드
+# -----------------------------
+print("\nCaltech-256 데이터셋 다운로드 중...")
 dataset = load_dataset("bitmind/caltech-256", split="train")
 print(f"이미지 개수: {len(dataset)}")
 
-# 3. 이미지 임베딩 생성
+
+# -----------------------------
+# 3) 이미지 → 임베딩(벡터) 만들기
+# -----------------------------
 print("\n이미지 임베딩 생성 중...")
 batch_size = 32
 all_embeddings = []
 
-for i in range(0, len(dataset), batch_size):
-    batch = dataset[i:i + batch_size]
-    images = []
+for start in range(0, len(dataset), batch_size):
+    batch = dataset[start : start + batch_size]
 
-    for img in batch["image"]:
-        # 그레이스케일 -> RGB 변환
-        if img.mode != "RGB":
-            img = img.convert("RGB")
-        images.append(img)
+    # RGB 이미지가 아니면 RGB로 바꿔줌
+    images = [
+        (img.convert("RGB") if img.mode != "RGB" else img)
+        for img in batch["image"]
+    ]
 
-    # CLIP 전처리 및 임베딩
+    # 이미지를 모델 입력 형태(텐서)로 변환
     inputs = processor(images=images, return_tensors="pt", padding=True)
     inputs = {k: v.to(device) for k, v in inputs.items()}
 
+    # 특징(임베딩) 추출: 학습이 아니라 추론만 하므로 no_grad 사용
     with torch.no_grad():
         image_embeds = model.get_image_features(**inputs)
-        image_embeds = image_embeds / get_vector_norm(image_embeds)  # 정규화
 
+        # 코사인 유사도를 쓰기 위해 벡터를 L2 정규화 (길이를 1로 맞춤)
+        image_embeds = F.normalize(image_embeds, p=2, dim=-1)
+
+    # FAISS는 보통 numpy(float32)를 사용
     all_embeddings.append(image_embeds.cpu().numpy())
 
-    if (i // batch_size + 1) % 50 == 0:
-        print(f"  진행: {min(i + batch_size, len(dataset))}/{len(dataset)}")
+    # 진행 과정 표시
+    if (start // batch_size + 1) % 50 == 0:
+        done = min(start + batch_size, len(dataset))
+        print(f"  진행: {done}/{len(dataset)}")
 
+# (N, 512) 형태로 합치기
 embeddings = np.vstack(all_embeddings).astype("float32")
 print(f"\n임베딩 shape: {embeddings.shape}")
 
 
-# 4. FAISS 인덱스 생성 및 저장
+# -----------------------------
+# 4) FAISS 인덱스 만들고 저장하기
+# -----------------------------
 print("\nFAISS 인덱스 생성 중...")
-dimension = embeddings.shape[1]  # 512
-index = faiss.IndexFlatIP(dimension)  # 내적(코사인 유사도) 기반
+
+# CLIP 임베딩 차원(보통 512)
+dimension = embeddings.shape[1]
+
+# IndexFlatIP: 벡터끼리 얼마나 비슷한지 비교하는 방식
+# 위에서 벡터 길이를 맞춰줬기 때문에, "방향이 얼마나 같은지"를 비교하게 됨
+index = faiss.IndexFlatIP(dimension)
 index.add(embeddings)
+
 print(f"인덱스에 저장된 벡터 수: {index.ntotal}")
 
-# 저장
+# 저장 폴더 만들고 인덱스 파일 저장
 save_dir = "5_huggingface/image_db"
 os.makedirs(save_dir, exist_ok=True)
 
-faiss.write_index(index, f"{save_dir}/caltech256.index")
+save_path = os.path.join(save_dir, "caltech256.index")
+faiss.write_index(index, save_path)
 
-print(f"\n저장 완료: {save_dir}/")
-print("  - caltech256.index (FAISS 인덱스)")
+print(f"\n저장 완료: {save_path}")
