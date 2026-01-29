@@ -62,10 +62,10 @@ for start in range(0, len(dataset), batch_size):
     with torch.no_grad():
         image_embeds = model.get_image_features(**inputs)
 
-        # 코사인 유사도를 쓰기 위해 벡터를 L2 정규화 (길이를 1로 맞춤)
+        # 벡터 길이를 1로 맞춤(정규화)
         image_embeds = F.normalize(image_embeds, p=2, dim=-1)
 
-    # FAISS는 보통 numpy(float32)를 사용
+    # 이미지 임베딩을 numpy로 변경 후 리스트에 추가
     all_embeddings.append(image_embeds.cpu().numpy())
 
     # 진행 과정 표시
@@ -86,8 +86,9 @@ print("\nFAISS 인덱스 생성 중...")
 # CLIP 임베딩 차원(보통 512)
 dimension = embeddings.shape[1]
 
-# IndexFlatIP: 벡터끼리 얼마나 비슷한지 비교하는 방식
-# 위에서 벡터 길이를 맞춰줬기 때문에, "방향이 얼마나 같은지"를 비교하게 됨
+# IndexFlatIP: 벡터끼리 얼마나 비슷한지 비교하고 벡터들을 정리
+# 인덱스 사용: 인덱스 = 빠른 검색을 위해 미리 정리한 목록
+# 예시: 책에서 "사과"가 나오는 곳을 찾을 때 페이지를 알면 빨리 찾음
 index = faiss.IndexFlatIP(dimension)
 index.add(embeddings)
 

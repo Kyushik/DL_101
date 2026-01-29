@@ -16,7 +16,7 @@ import torch.nn.functional as F
 
 
 # -----------------------------
-# 1) CLIP 모델 준비 (텍스트를 벡터로 바꾸는 AI)
+# 1) CLIP 모델 준비 (텍스트를 임베딩 벡터로 바꾸는 모델)
 # -----------------------------
 print("CLIP 모델 로딩 중...")
 model_name = "openai/clip-vit-base-patch32"
@@ -25,7 +25,7 @@ processor = CLIPProcessor.from_pretrained(model_name)
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 model = model.to(device)
-model.eval()  # 학습이 아니라 "특징 추출" 모드
+model.eval()  # 학습이 아니라 추론 모드로 설정
 print(f"디바이스: {device}")
 
 
@@ -83,14 +83,14 @@ def show_search_results(query_text: str, scores, indices):
     fig, axes = plt.subplots(1, top_k, figsize=(4 * top_k, 4))
     fig.suptitle(f'Search: "{query_text}"', fontsize=14)
 
-    # top_k가 1이면 axes가 배열이 아니라 단일 객체가 될 수 있어서 통일 처리
+    # top_k가 1인 경우 axes가 배열이 되도록 처리
     if top_k == 1:
         axes = [axes]
 
     for i, (score, idx) in enumerate(zip(scores, indices)):
         image = dataset[int(idx)]["image"]
 
-        # 혹시 흑백이면 RGB로 바꿔서 안정적으로 출력
+        # 혹시 흑백이면 RGB로 바꿔서 출력
         if image.mode != "RGB":
             image = image.convert("RGB")
 
