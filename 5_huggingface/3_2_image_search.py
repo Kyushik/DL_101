@@ -90,7 +90,7 @@ def show_search_results(query_text: str, scores, indices):
     for i, (score, idx) in enumerate(zip(scores, indices)):
         image = dataset[int(idx)]["image"]
 
-        # 혹시 흑백이면 RGB로 바꿔서 출력
+        # 이미지가 RGB가 아니면 RGB로 바꿔서 출력
         if image.mode != "RGB":
             image = image.convert("RGB")
 
