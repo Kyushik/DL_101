@@ -55,39 +55,25 @@ def process_mbti_dataset():
 
     print(f"\n처리된 데이터 수: {len(processed_data)}")
 
-    # 학습/검증 데이터 분리 (90% 학습, 10% 검증)
-    split_idx = int(len(processed_data) * 0.9)
-    train_processed = processed_data[:split_idx]
-    eval_processed = processed_data[split_idx:]
-
-    print(f"학습 데이터: {len(train_processed)}")
-    print(f"검증 데이터: {len(eval_processed)}")
-
     # 저장 경로 설정
-    output_dir = Path(__file__).parent / "data"
+    output_dir = "./data"
     output_dir.mkdir(exist_ok=True)
 
-    # JSONL 형식으로 저장
+    # JSONL 형식으로 저장 (검증 데이터는 axolotl에서 자동 분리)
     train_path = output_dir / "mbti_f_style_train.jsonl"
-    eval_path = output_dir / "mbti_f_style_eval.jsonl"
 
     with open(train_path, "w", encoding="utf-8") as f:
-        for item in train_processed:
-            f.write(json.dumps(item, ensure_ascii=False) + "\n")
-
-    with open(eval_path, "w", encoding="utf-8") as f:
-        for item in eval_processed:
+        for item in processed_data:
             f.write(json.dumps(item, ensure_ascii=False) + "\n")
 
     print(f"\n저장 완료!")
     print(f"학습 데이터: {train_path}")
-    print(f"검증 데이터: {eval_path}")
 
     # 샘플 출력
     print("\n=== 변환된 샘플 데이터 ===")
     print(json.dumps(processed_data[0], indent=2, ensure_ascii=False))
 
-    return train_path, eval_path
+    return train_path
 
 
 if __name__ == "__main__":

@@ -41,7 +41,7 @@ save_total_limit: 1
 # === 훈련 하이퍼파라미터 ===
 gradient_accumulation_steps: 4
 gradient_checkpointing: true
-micro_batch_size: 4
+micro_batch_size: 8
 num_epochs: 3
 learning_rate: 5.0e-5
 lr_scheduler: cosine
