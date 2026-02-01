@@ -5,7 +5,6 @@ mks0813/mbti-f-t-style-responses 데이터를 axolotl 학습 형식으로 변환
 
 from datasets import load_dataset
 import json
-from pathlib import Path
 
 
 def process_mbti_dataset():

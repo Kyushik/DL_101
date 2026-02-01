@@ -51,7 +51,7 @@ def generate_image(pipe, prompt, negative_prompt="", save_path="output.png"):
 if __name__ == "__main__":
     pipe = load_pipeline(LORA_PATH)
 
-    prompt = "A cute cat sitting on a windowsill"
+    prompt = input("만들고 싶은 이미지 내용을 영어로 입력하세요: ")
     negative_prompt = "blurry, realistic, photo"
 
-    image = generate_image(pipe, prompt, negative_prompt, "pixel_cat.png")
+    image = generate_image(pipe, prompt, negative_prompt, "prompt.png")
