@@ -5,6 +5,7 @@ mks0813/mbti-f-t-style-responses 데이터를 axolotl 학습 형식으로 변환
 
 from datasets import load_dataset
 import json
+import os
 
 
 def process_mbti_dataset():
@@ -56,10 +57,10 @@ def process_mbti_dataset():
 
     # 저장 경로 설정
     output_dir = "./data"
-    output_dir.mkdir(exist_ok=True)
+    os.makedirs(output_dir, exist_ok=True)
 
     # JSONL 형식으로 저장 (검증 데이터는 axolotl에서 자동 분리)
-    train_path = output_dir / "mbti_f_style_train.jsonl"
+    train_path = os.path.join(output_dir, "mbti_f_style_train.jsonl")
 
     with open(train_path, "w", encoding="utf-8") as f:
         for item in processed_data:
