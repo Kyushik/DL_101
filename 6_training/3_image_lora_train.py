@@ -72,7 +72,7 @@ def train():
         f"{MODEL_ID}:transformer/*.safetensors,{MODEL_ID}:text_encoder/*.safetensors,{MODEL_ID}:vae/*.safetensors",
         "--dataset_base_path", str(DATASET_PATH),
         "--dataset_metadata_path", str(csv_path),
-        "--dataset_repeat", "10",
+        "--dataset_repeat", "1",
         "--max_pixels", "1048576",
         "--trainable_models", "dit",
         "--learning_rate", str(LEARNING_RATE),
