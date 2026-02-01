@@ -2,30 +2,48 @@
 # 모델: Qwen/Qwen3-4B, 데이터: MBTI F-style
 
 base_model: Qwen/Qwen3-4B
-trust_remote_code: true
+base_model_config: Qwen/Qwen3-4B
+model_type: AutoModelForCausalLM
+tokenizer_type: AutoTokenizer
+adapter: null
 
 datasets:
   - path: ./data/mbti_f_style_train.jsonl
     type: chat_template
     chat_template: qwen3
 
-output_dir: ./outputs/qwen3-4b-mbti-full
-
+# 전체 길이 설정 
 sequence_len: 2048
+preprocessing_num_workers: 4
+shuffle_merged_datasets: true
 
+# === 출력 디렉토리 설정 ===
+output_dir: ./outputs/qwen3-4b-mbti-full
+overwrite_output_dir: true
+save_only_model: true
+save_safetensors: true
+
+# === 로깅 및 저장 ===
+logging_steps: 10
+save_strategy: epoch
+save_total_limit: 1
+
+# === 훈련 하이퍼파라미터 ===
+gradient_accumulation_steps: 4
+gradient_checkpointing: true
+micro_batch_size: 4
 num_epochs: 3
-micro_batch_size: 8
-gradient_accumulation_steps: 1
-learning_rate: 2e-5
+learning_rate: 5.0e-5
 lr_scheduler: cosine
 warmup_ratio: 0.1
-
-bf16: true
-gradient_checkpointing: true
 flash_attention: true
+bf16: true
 
-logging_steps: 10
-save_steps: 100
-
-special_tokens:
-  pad_token: "<|endoftext|>"
+# === DeepSpeed ===
+deepspeed: deepspeed_zero2.json
+  
+# === 평가 설정 ===
+val_set_size: 0.05
+eval_strategy: steps
+eval_steps: 50
+per_device_eval_batch_size: 16

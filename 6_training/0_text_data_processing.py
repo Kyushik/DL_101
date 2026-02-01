@@ -40,7 +40,7 @@ def process_mbti_dataset():
 
         # Qwen3 chat 형식에 맞게 변환
         processed_item = {
-            "conversations": [
+            "messages": [
                 {
                     "role": "user",
                     "content": conversation

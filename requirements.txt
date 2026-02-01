@@ -7,4 +7,3 @@ faiss-cpu==1.11.0
 matplotlib==3.10.3
 peft==0.17.0
 tqdm==4.67.1
-axolotl==0.14.0
