@@ -1,0 +1,45 @@
+# Axolotl LoRA Fine-tuning
+# 모델: Qwen/Qwen3-4B, 데이터: MBTI F-style
+
+base_model: Qwen/Qwen3-4B
+trust_remote_code: true
+
+datasets:
+  - path: ./data/mbti_f_style_train.jsonl
+    type: chat_template
+    chat_template: qwen3
+
+output_dir: ./outputs/qwen3-4b-mbti-lora
+
+sequence_len: 2048
+
+# LoRA 설정
+adapter: lora
+lora_r: 32
+lora_alpha: 64
+lora_dropout: 0.05
+lora_target_modules:
+  - q_proj
+  - k_proj
+  - v_proj
+  - o_proj
+  - gate_proj
+  - up_proj
+  - down_proj
+
+num_epochs: 3
+micro_batch_size: 8
+gradient_accumulation_steps: 1
+learning_rate: 2e-4
+lr_scheduler: cosine
+warmup_ratio: 0.1
+
+bf16: true
+gradient_checkpointing: true
+flash_attention: true
+
+logging_steps: 10
+save_steps: 100
+
+special_tokens:
+  pad_token: "<|endoftext|>"
