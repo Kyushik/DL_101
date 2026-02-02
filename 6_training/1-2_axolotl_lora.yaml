@@ -39,9 +39,9 @@ save_strategy: epoch
 save_total_limit: 1
 
 # === 훈련 하이퍼파라미터 ===
-gradient_accumulation_steps: 4
+gradient_accumulation_steps: 1
 gradient_checkpointing: true
-micro_batch_size: 8
+micro_batch_size: 32
 num_epochs: 3
 learning_rate: 5.0e-5
 lr_scheduler: cosine
@@ -52,5 +52,5 @@ bf16: true
 # === 평가 설정 ===
 val_set_size: 0.05
 eval_strategy: steps
-eval_steps: 50
-per_device_eval_batch_size: 16
+eval_steps: 100
+per_device_eval_batch_size: 64
