@@ -25,7 +25,6 @@ datasets:
 # 전체 길이 설정 
 sequence_len: 2048
 preprocessing_num_workers: 4
-shuffle_merged_datasets: true
 
 # === 출력 디렉토리 설정 ===
 output_dir: ./outputs/qwen3-4b-mbti-lora
