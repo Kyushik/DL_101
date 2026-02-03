@@ -21,6 +21,12 @@ def process_mbti_dataset():
     train_data = dataset["train"]
 
     print(f"전체 데이터 수: {len(train_data)}")
+
+    # 20000개만 사용
+    max_samples = 20000
+    if len(train_data) > max_samples:
+        train_data = train_data.select(range(max_samples))
+        print(f"사용할 데이터 수: {len(train_data)}")
     print(f"컬럼: {train_data.column_names}")
 
     # 샘플 데이터 확인

@@ -38,6 +38,9 @@ logging_steps: 10
 save_strategy: epoch
 save_total_limit: 1
 
+# === WandB 설정 ===
+wandb_project: qwen3-mbti-lora
+
 # === 훈련 하이퍼파라미터 ===
 gradient_accumulation_steps: 1
 gradient_checkpointing: true
