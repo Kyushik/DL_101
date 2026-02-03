@@ -50,6 +50,7 @@ def generate_response(model, tokenizer, user_input, max_new_tokens=512):
         messages,
         tokenize=False,
         add_generation_prompt=True,
+        enable_thinking=False,
     )
 
     inputs = tokenizer(text, return_tensors="pt").to(model.device)
