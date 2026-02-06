@@ -5,6 +5,7 @@ Z-Image LoRA 추론 스크립트 (DiffSynth Studio)
 설치: pip install diffsynth
 """
 
+import os
 import torch
 from diffsynth.pipelines.z_image import ZImagePipeline, ModelConfig
 
@@ -15,6 +16,13 @@ LORA_PATH = "./outputs/z-image-pixel-lora/epoch-1.safetensors"
 
 # 픽셀 아트 스타일 고정 프롬프트
 STYLE_SUFFIX = ", pxlstl"
+
+def resolve_lora_path(path):
+    """로컬 경로면 그대로, HuggingFace repo_id면 다운로드"""
+    if os.path.exists(path):
+        return path
+    from huggingface_hub import hf_hub_download
+    return hf_hub_download(repo_id=path, filename="z-image-turbo-pixel-art-lora.safetensors")
 
 def load_pipeline(lora_path=None):
     """파이프라인 로드 (LoRA 옵션)"""
@@ -37,6 +45,7 @@ def load_pipeline(lora_path=None):
     )
 
     if lora_path:
+        lora_path = resolve_lora_path(lora_path)
         pipe.load_lora(pipe.dit, lora_path)
         print(f"LoRA 로드 완료: {lora_path}")
 
