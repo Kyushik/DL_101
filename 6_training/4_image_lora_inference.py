@@ -10,12 +10,11 @@ from diffsynth.pipelines.z_image import ZImagePipeline, ModelConfig
 
 
 # 설정 (로컬 모델 경로 사용)
-MODEL_PATH = "./DiffSynth-Studio/models/Tongyi-MAI/Z-Image-Turbo"
-LORA_PATH = "./outputs/z-image-pixel-lora/epoch-2.safetensors"
+MODEL_PATH = "./models/Tongyi-MAI/Z-Image-Turbo"
+LORA_PATH = "./outputs/z-image-pixel-lora/epoch-1.safetensors"
 
 # 픽셀 아트 스타일 고정 프롬프트
-STYLE_SUFFIX = ", large, clearly visible pixels, chunky pixel blocks, low resolution look, limited color palette, no smooth gradients, no anti-aliasing, no blur, sharp pixel edges, retro 16-bit game style"
-
+STYLE_SUFFIX = ", pxlstl"
 
 def load_pipeline(lora_path=None):
     """파이프라인 로드 (LoRA 옵션)"""
@@ -46,9 +45,7 @@ def load_pipeline(lora_path=None):
 
 def generate_image(pipe, prompt, save_path="output.png"):
     """이미지 생성"""
-    full_prompt = prompt + STYLE_SUFFIX
-
-    image = pipe(prompt=full_prompt, seed=42, rand_device="cuda")
+    image = pipe(prompt=prompt + STYLE_SUFFIX, seed=42, rand_device="cuda")
 
     image.save(save_path)
     print(f"이미지 저장: {save_path}")
@@ -58,6 +55,13 @@ def generate_image(pipe, prompt, save_path="output.png"):
 if __name__ == "__main__":
     pipe = load_pipeline(LORA_PATH)
 
-    prompt = input("만들고 싶은 이미지 내용을 영어로 입력하세요: ")
-
-    image = generate_image(pipe, prompt, f"{prompt}.png")
+    print("프롬프트를 입력하세요. 종료하려면 'quit' 또는 'q'를 입력하세요.")
+    count = 0
+    while True:
+        prompt = input("\n프롬프트: ").strip()
+        if prompt.lower() in ("quit", "q", "exit"):
+            print("종료합니다.")
+            break
+        if not prompt:
+            continue
+        image = generate_image(pipe, prompt, f"{prompt}.png")

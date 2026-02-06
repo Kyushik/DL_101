@@ -27,7 +27,7 @@ MODEL_FILES = "Tongyi-MAI/Z-Image-Turbo:transformer/*.safetensors,Tongyi-MAI/Z-I
 DATASET_ID = "mks0813/pixel_image_dataset"
 
 # 학습 설정
-EPOCHS = 3
+EPOCHS = 2
 LEARNING_RATE = 1e-4
 LORA_RANK = 32
 LORA_TARGET_MODULES = "to_q,to_k,to_v,to_out.0,w1,w2,w3"
