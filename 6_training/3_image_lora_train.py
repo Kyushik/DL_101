@@ -3,22 +3,24 @@ Z-Image LoRA 학습 (DiffSynth Studio)
 
 설치: pip install diffsynth accelerate
 실행: python 3_image_lora_train.py
+
+※ DiffSynth-Studio clone 필요:
+   git clone https://github.com/modelscope/DiffSynth-Studio.git
 """
 
-import os
 import subprocess
 import csv
 from pathlib import Path
 from datasets import load_dataset
 
-# 경로 설정 (절대 경로)
-BASE_DIR = Path(__file__).parent.absolute()
-DIFFSYNTH_DIR = BASE_DIR / "DiffSynth-Studio"
-DATASET_PATH = BASE_DIR / "data" / "pixel_dataset"
-OUTPUT_DIR = BASE_DIR / "outputs" / "z-image-pixel-lora"
+# 경로 설정
+DIFFSYNTH_DIR = "./DiffSynth-Studio"
+DATASET_PATH = "./data/pixel_dataset"
+OUTPUT_DIR = "./outputs/z-image-pixel-lora"
 
 # 모델 설정
 MODEL_ID = "Tongyi-MAI/Z-Image-Turbo"
+MODEL_FILES = "transformer/*.safetensors,text_encoder/*.safetensors,vae/*.safetensors"
 DATASET_ID = "mks0813/pixel_image_dataset"
 
 # 학습 설정
@@ -33,19 +35,19 @@ def prepare_dataset():
     from tqdm import tqdm
 
     print("데이터셋 준비 중...")
-    img_dir = DATASET_PATH / "images"
-    img_dir.mkdir(parents=True, exist_ok=True)
+    img_dir = f"{DATASET_PATH}/images"
+    Path(img_dir).mkdir(parents=True, exist_ok=True)
 
     dataset = load_dataset(DATASET_ID, split="train")
 
     metadata = []
     for i, item in enumerate(tqdm(dataset, desc="이미지 저장")):
         img_path = f"images/{i:05d}.png"
-        item["image"].convert("RGB").save(DATASET_PATH / img_path)
+        item["image"].convert("RGB").save(f"{DATASET_PATH}/{img_path}")
         prompt = item.get("prompt", item.get("text", "pixel art"))
         metadata.append({"image": img_path, "prompt": prompt})
 
-    csv_path = DATASET_PATH / "metadata.csv"
+    csv_path = f"{DATASET_PATH}/metadata.csv"
     with open(csv_path, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=["image", "prompt"])
         writer.writeheader()
@@ -56,38 +58,36 @@ def prepare_dataset():
 
 def train():
     """DiffSynth Studio로 LoRA 학습"""
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    Path(OUTPUT_DIR).mkdir(parents=True, exist_ok=True)
 
     # 데이터셋 준비
-    csv_path = DATASET_PATH / "metadata.csv"
-    if not csv_path.exists():
+    csv_path = f"{DATASET_PATH}/metadata.csv"
+    if not Path(csv_path).exists():
         prepare_dataset()
 
     # DiffSynth-Studio 디렉토리로 이동하여 실행
-    train_script = DIFFSYNTH_DIR / "examples" / "z_image" / "model_training" / "train.py"
+    train_script = f"{DIFFSYNTH_DIR}/examples/z_image/model_training/train.py"
 
     cmd = [
-        "accelerate", "launch", str(train_script),
-        "--model_id_with_origin_paths",
-        f"{MODEL_ID}:transformer/*.safetensors,{MODEL_ID}:text_encoder/*.safetensors,{MODEL_ID}:vae/*.safetensors",
-        "--dataset_base_path", str(DATASET_PATH),
-        "--dataset_metadata_path", str(csv_path),
+        "accelerate", "launch", train_script,
+        "--model_id_with_origin_paths", f"{MODEL_ID}:{MODEL_FILES}",
+        "--dataset_base_path", DATASET_PATH,
+        "--dataset_metadata_path", csv_path,
         "--dataset_repeat", "1",
         "--max_pixels", "1048576",
         "--trainable_models", "dit",
-        "--learning_rate", str(LEARNING_RATE),
-        "--num_epochs", str(EPOCHS),
+        "--learning_rate", f"{LEARNING_RATE}",
+        "--num_epochs", f"{EPOCHS}",
         "--lora_base_model", "dit",
         "--lora_target_modules", LORA_TARGET_MODULES,
-        "--lora_rank", str(LORA_RANK),
-        "--output_path", str(OUTPUT_DIR),
+        "--lora_rank", f"{LORA_RANK}",
+        "--output_path", OUTPUT_DIR,
         "--use_gradient_checkpointing",
     ]
 
-    print("학습 명령어:")
-    print(" ".join(cmd))
-    print("\n학습 시작...")
-    subprocess.run(cmd, cwd=str(DIFFSYNTH_DIR))
+    print(f"학습 명령어:\n{' '.join(cmd)}")
+    print(f"\n학습 시작...")
+    subprocess.run(cmd, cwd=DIFFSYNTH_DIR)
 
 
 if __name__ == "__main__":
