@@ -10,8 +10,11 @@ Z-Image LoRA 학습 (DiffSynth Studio)
 
 import subprocess
 import csv
+import os
 from pathlib import Path
 from datasets import load_dataset
+
+os.environ["DIFFSYNTH_DOWNLOAD_SOURCE"] = "huggingface"
 
 # 경로 설정
 DIFFSYNTH_DIR = "./DiffSynth-Studio"
@@ -20,7 +23,7 @@ OUTPUT_DIR = "./outputs/z-image-pixel-lora"
 
 # 모델 설정
 MODEL_ID = "Tongyi-MAI/Z-Image-Turbo"
-MODEL_FILES = "transformer/*.safetensors,text_encoder/*.safetensors,vae/*.safetensors"
+MODEL_FILES = "Tongyi-MAI/Z-Image-Turbo:transformer/*.safetensors,Tongyi-MAI/Z-Image-Turbo:text_encoder/*.safetensors,Tongyi-MAI/Z-Image-Turbo:vae/*.safetensors"
 DATASET_ID = "mks0813/pixel_image_dataset"
 
 # 학습 설정
@@ -70,7 +73,7 @@ def train():
 
     cmd = [
         "accelerate", "launch", train_script,
-        "--model_id_with_origin_paths", f"{MODEL_ID}:{MODEL_FILES}",
+        "--model_id_with_origin_paths", MODEL_FILES,
         "--dataset_base_path", DATASET_PATH,
         "--dataset_metadata_path", csv_path,
         "--dataset_repeat", "1",
