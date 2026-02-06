@@ -11,7 +11,6 @@ Z-Image LoRA 학습 (DiffSynth Studio)
 import subprocess
 import csv
 import os
-from pathlib import Path
 from datasets import load_dataset
 
 os.environ["DIFFSYNTH_DOWNLOAD_SOURCE"] = "huggingface"
@@ -39,7 +38,7 @@ def prepare_dataset():
 
     print("데이터셋 준비 중...")
     img_dir = f"{DATASET_PATH}/images"
-    Path(img_dir).mkdir(parents=True, exist_ok=True)
+    os.makedirs(img_dir, exist_ok=True)
 
     dataset = load_dataset(DATASET_ID, split="train")
 
@@ -47,7 +46,7 @@ def prepare_dataset():
     for i, item in enumerate(tqdm(dataset, desc="이미지 저장")):
         img_path = f"images/{i:05d}.png"
         item["image"].convert("RGB").save(f"{DATASET_PATH}/{img_path}")
-        prompt = item.get("prompt", item.get("text", "pixel art"))
+        prompt = item.get("prompt", "")
         metadata.append({"image": img_path, "prompt": prompt})
 
     csv_path = f"{DATASET_PATH}/metadata.csv"
@@ -61,11 +60,11 @@ def prepare_dataset():
 
 def train():
     """DiffSynth Studio로 LoRA 학습"""
-    Path(OUTPUT_DIR).mkdir(parents=True, exist_ok=True)
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
 
     # 데이터셋 준비
     csv_path = f"{DATASET_PATH}/metadata.csv"
-    if not Path(csv_path).exists():
+    if not os.path.exists(csv_path):
         prepare_dataset()
 
     # DiffSynth-Studio 디렉토리로 이동하여 실행
