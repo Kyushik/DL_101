@@ -22,7 +22,7 @@ def resolve_lora_path(path):
     if os.path.exists(path):
         return path
     from huggingface_hub import hf_hub_download
-    return hf_hub_download(repo_id=path, filename="z-image-turbo-pixel-art-lora.safetensors")
+    return hf_hub_download(repo_id=path, filename="epoch-1.safetensors")
 
 def load_pipeline(lora_path=None):
     """파이프라인 로드 (LoRA 옵션)"""
