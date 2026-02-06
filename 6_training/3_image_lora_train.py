@@ -1,7 +1,7 @@
 """
 Z-Image LoRA 학습 (DiffSynth Studio)
 
-설치: pip install diffsynth accelerate
+설치: pip install diffsynth
 실행: python 3_image_lora_train.py
 
 ※ DiffSynth-Studio clone 필요:
@@ -87,7 +87,7 @@ def train():
 
     print(f"학습 명령어:\n{' '.join(cmd)}")
     print(f"\n학습 시작...")
-    subprocess.run(cmd, cwd=DIFFSYNTH_DIR)
+    subprocess.run(cmd)
 
 
 if __name__ == "__main__":
