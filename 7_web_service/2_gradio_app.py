@@ -12,7 +12,7 @@ import gradio as gr
 
 
 # FastAPI 서버 주소
-API_URL = "http://localhost:8000"
+API_URL = "http://localhost:8080"
 
 
 # ============================================================
@@ -87,4 +87,4 @@ with gr.Blocks() as demo:
 
 
 # 서버 실행
-demo.launch(server_name="0.0.0.0", server_port=9000)
+demo.launch(server_name="0.0.0.0", server_port=9090)
