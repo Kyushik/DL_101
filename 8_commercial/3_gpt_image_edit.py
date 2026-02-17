@@ -7,7 +7,7 @@ load_dotenv()
 
 client = OpenAI()
 
-prompt = """이 이미지를 애니메이션 캐릭터로 변경해줘"""
+prompt = """이 이미지를 애니메이션 스타일로 변경해줘"""
 
 result = client.images.edit(
     model="gpt-image-1.5",
